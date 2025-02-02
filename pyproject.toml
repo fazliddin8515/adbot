@@ -2,7 +2,7 @@
 name = "adbot"
 version = "0.1.0"
 requires-python = ">=3.13"
-dependencies = []
+dependencies = ["aiogram (>=3.17.0,<4.0.0)"]
 
 
 [build-system]
@@ -21,3 +21,4 @@ ignore = ["F401"]
 
 [tool.mypy]
 strict = true
+ignore_missing_imports = true
