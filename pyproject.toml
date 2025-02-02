@@ -2,7 +2,11 @@
 name = "adbot"
 version = "0.1.0"
 requires-python = ">=3.13"
-dependencies = ["aiogram (>=3.17.0,<4.0.0)"]
+dependencies = [
+    "aiogram (>=3.17.0,<4.0.0)",
+    "sqlalchemy (>=2.0.37,<3.0.0)",
+    "pymysql (>=1.1.1,<2.0.0)",
+]
 
 
 [build-system]
@@ -22,3 +26,4 @@ ignore = ["F401"]
 [tool.mypy]
 strict = true
 ignore_missing_imports = true
+plugins = ["sqlalchemy.ext.mypy.plugin"]
