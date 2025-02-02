@@ -1,14 +1,8 @@
 [project]
 name = "adbot"
 version = "0.1.0"
-description = ""
-authors = [
-    {name = "Fazliddin O'sarov",email = "fazliddinusarov1999@gamil.com"}
-]
-readme = "README.md"
 requires-python = ">=3.13"
-dependencies = [
-]
+dependencies = []
 
 
 [build-system]
