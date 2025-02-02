@@ -2,8 +2,8 @@ import asyncio
 
 from aiogram import Bot
 
-from .bot.bot import bot
-from .bot.dispatcher import dp
+from bot.bot import bot
+from bot.dispatcher import dp
 
 
 async def on_start(bot: Bot) -> None:
