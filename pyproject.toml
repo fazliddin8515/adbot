@@ -6,6 +6,7 @@ dependencies = [
     "aiogram (>=3.17.0,<4.0.0)",
     "sqlalchemy (>=2.0.37,<3.0.0)",
     "pymysql (>=1.1.1,<2.0.0)",
+    "alembic (>=1.14.1,<2.0.0)",
 ]
 
 
