@@ -1,18 +1,21 @@
 import asyncio
-
-from aiogram import Bot
+import logging
+import os
 
 from bot.bot import bot
 from bot.dispatcher import dp
 
+os.makedirs("logs", exist_ok=True)
 
-async def on_start(bot: Bot) -> None:
-    bot_info = await bot.get_me()
-    print(f"https://t.me/{bot_info.username} has been started...")
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+    datefmt="%Y-%m-%d %H:%M:%S",
+    handlers=[logging.StreamHandler(), logging.FileHandler("logs/aiogram.log")],
+)
 
 
 async def main() -> None:
-    dp.startup.register(on_start)
     await dp.start_polling(bot)
 
 
