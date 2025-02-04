@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from sqlalchemy import String, func
+from sqlalchemy import BigInteger, String, func
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
 
 
@@ -10,7 +10,7 @@ class Base(DeclarativeBase):
 
 class User(Base):
     __tablename__ = "users"
-    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=False)
+    id: Mapped[int] = mapped_column(BigInteger, primary_key=True, autoincrement=False)
     is_bot: Mapped[bool] = mapped_column(default=False, nullable=False)
     first_name: Mapped[str] = mapped_column(String(55), nullable=False)
     last_name: Mapped[str | None] = mapped_column(String(55), nullable=True)
