@@ -58,14 +58,37 @@ async def add_admin_handler(msg: Message) -> None:
                     if not existing_user.is_admin:
                         existing_user.is_admin = True
                         session.commit()
-                        await msg.answer(f"The {username} added to the admins list")
+                        await msg.answer(f"The {username} is added to the admins list")
                     else:
                         await msg.answer(
-                            f"The {username} already added to the admins list"
+                            f"The {username} is already added to the admins list"
                         )
                 else:
-                    await msg.answer(f"The {username} user hasn't started the bot")
+                    await msg.answer(f"The {username} user hasn't started the bot yet")
             else:
                 await msg.answer(
                     f"The {username} username must begin with the '@' symbol"
                 )
+
+
+async def remove_admin_handler(msg: Message) -> None:
+    from_user = msg.from_user
+    if (
+        (from_user is not None)
+        and (msg.text is not None)
+        and (from_user.id == int(ROOT_ID))
+    ):
+        with Session() as session:
+            username = msg.text.split(" ")[1].strip()
+            if username[0] == "@":
+                select_stmt = select(User).where(User.username == username[1:])
+                existing_user = session.scalars(select_stmt).first()
+                if existing_user is not None:
+                    if existing_user.is_admin:
+                        existing_user.is_admin = False
+                        session.commit()
+                        await msg.answer(
+                            f"The {username} is removed to the admins list"
+                        )
+                    else:
+                        await msg.answer(f"The {username} isn't on the admins list")
