@@ -5,6 +5,6 @@ def get_env(name: str) -> str:
     value = os.getenv(name)
 
     if value is None:
-        raise Exception(f"{name} isn't set on the environment")
+        raise RuntimeError(f"{name} isn't set in the environment")
 
     return value
