@@ -16,7 +16,20 @@ logging.basicConfig(
 
 
 async def main() -> None:
-    await dp.start_polling(bot)
+    try:
+        await dp.start_polling(bot)
+    except asyncio.CancelledError:
+        logging.info("Polling was cancelled. Shutting down gracefully...")
+    except ConnectionError as e:
+        logging.error("Timeout error: %s", e, exc_info=True)
+    except TimeoutError as e:
+        logging.error("Timeout error: %s", e, exc_info=True)
+    except Exception as e:
+        logging.error("Bot encountered an error: %s", e, exc_info=True)
+    finally:
+        await bot.session.close()
+        logging.info("Bot session closed.")
 
 
-asyncio.run(main())
+if __name__ == "__main__":
+    asyncio.run(main())
