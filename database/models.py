@@ -10,6 +10,7 @@ class Base(DeclarativeBase):
 
 class User(Base):
     __tablename__ = "users"
+
     id: Mapped[int] = mapped_column(BigInteger, primary_key=True, autoincrement=False)
     is_bot: Mapped[bool] = mapped_column(default=False, nullable=False)
     first_name: Mapped[str] = mapped_column(String(55), nullable=False)
@@ -19,7 +20,7 @@ class User(Base):
     is_admin: Mapped[bool | None] = mapped_column(default=False, nullable=False)
 
     created_at: Mapped[datetime] = mapped_column(default=func.now(), nullable=False)
-    updated_ad: Mapped[datetime] = mapped_column(
+    updated_at: Mapped[datetime] = mapped_column(
         default=func.now(), onupdate=func.now(), nullable=False
     )
 
