@@ -1,7 +1,12 @@
+import logging
+import os
+
 from aiogram import Bot
 
-from utils.env import get_env
+BOT_TOKEN = os.getenv("BOT_TOKEN")
 
-BOT_TOKEN = get_env("BOT_TOKEN")
+if not BOT_TOKEN:
+    logging.critical("Missing BOT_TOKEN environment variable.")
+    raise SystemExit(1)
 
 bot = Bot(BOT_TOKEN)
