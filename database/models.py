@@ -40,4 +40,4 @@ class User(Base):
         self.language_code = language_code
 
     def __repr__(self) -> str:
-        return f"<User(id={self.id}, firt_name={self.first_name}), username={self.username}>"  # noqa: E501
+        return f"<User(id={self.id}, firt_name={self.first_name}, username={self.username})>"  # noqa: E501

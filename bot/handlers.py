@@ -1,9 +1,14 @@
-from aiogram.types import Message
+from aiogram.enums import ParseMode
+from aiogram.fsm.context import FSMContext
+from aiogram.types import CallbackQuery, Message
 from sqlalchemy import select, update
 
+from bot.bot import bot
 from database.db import Session
 from database.models import User
 from utils.env import get_env
+
+from .keyboards import yes_no_keyboard
 
 ROOT_ID = get_env("ROOT_ID")
 
@@ -92,3 +97,47 @@ async def remove_admin_handler(msg: Message) -> None:
                         )
                     else:
                         await msg.answer(f"The {username} isn't on the admins list")
+
+
+async def post_handler(msg: Message, state: FSMContext) -> None:
+    from_user = msg.from_user
+    if (from_user is not None) and (msg.md_text is not None):
+        post = msg.md_text[5:].strip()
+        if len(post) != 0:
+            await state.update_data(post=post)
+            await msg.answer("Do you want to send the post?")
+            await msg.answer(
+                post,
+                parse_mode=ParseMode.MARKDOWN_V2,
+                reply_markup=yes_no_keyboard,
+            )
+        else:
+            await msg.answer("post is empty")
+
+
+async def send_post_handler(cb: CallbackQuery, state: FSMContext) -> None:
+    if isinstance(cb.message, Message):
+        from_user = cb.message.chat
+        data = await state.get_data()
+        post = data.get("post")
+        with Session() as session:
+            select_stmt = select(User)
+            users = session.scalars(select_stmt).all()
+            select_stmt = select(User).where(User.is_admin)
+            admins = session.scalars(select_stmt).all()
+            admin_ids = {admin.id for admin in admins}
+
+        if (from_user.id == int(ROOT_ID)) or (from_user.id in admin_ids):
+            for user in users:
+                await bot.send_message(user.id, post, parse_mode=ParseMode.MARKDOWN_V2)
+            await cb.message.edit_reply_markup(reply_markup=None)
+            await cb.message.reply("Post is sent")
+        else:
+            await cb.message.edit_reply_markup(reply_markup=None)
+            await cb.message.reply("You don't have permissions for sending posts")
+
+
+async def cancel_post_handler(cb: CallbackQuery) -> None:
+    if isinstance(cb.message, Message):
+        await cb.message.edit_reply_markup(reply_markup=None)
+        await cb.message.reply("Post is canceled")
