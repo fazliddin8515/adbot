@@ -1,7 +1,6 @@
 import os
 
-from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
+from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine
 
 from utils.db import create_db_url
 
@@ -18,7 +17,7 @@ assert DB_PORT is not None, "DB_PORT environment variable is required"
 assert DB_NAME is not None, "DB_NAME environment variable is required"
 
 DB_URL = create_db_url(
-    drivername="mysql+pymysql",
+    drivername="mysql+aiomysql",
     username=DB_USER,
     password=DB_PASS,
     host=DB_HOST,
@@ -26,6 +25,6 @@ DB_URL = create_db_url(
     database=DB_NAME,
 )
 
-engine = create_engine(DB_URL)
+engine = create_async_engine(DB_URL)
 
-Session = sessionmaker(engine)
+AsyncSessionLocal = async_sessionmaker(engine)
