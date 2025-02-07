@@ -27,4 +27,4 @@ DB_URL = create_db_url(
 
 engine = create_async_engine(DB_URL)
 
-AsyncSessionLocal = async_sessionmaker(engine)
+AsyncSession = async_sessionmaker(engine)

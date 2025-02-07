@@ -1,24 +1,32 @@
+import logging
+import os
+
 from aiogram.enums import ParseMode
 from aiogram.fsm.context import FSMContext
 from aiogram.types import CallbackQuery, Message
 from sqlalchemy import select, update
 
 from bot.bot import bot
-from database.db import Session
+from database.db import AsyncSession
 from database.models import User
-from utils.env import get_env
 
 from .keyboards import yes_no_keyboard
 
-ROOT_ID = get_env("ROOT_ID")
+root_id_str = os.getenv("ROOT_ID")
+
+if root_id_str is None:
+    logging.critical("Missing ROOT_ID environment variable.")
+    raise SystemExit(1)
+
+ROOT_ID = int(root_id_str)
 
 
 async def start_handler(msg: Message) -> None:
     from_user = msg.from_user
     if from_user is not None:
-        with Session() as session:
+        async with AsyncSession() as session:
             select_stmt = select(User).where(User.id == from_user.id)
-            result = session.execute(select_stmt)
+            result = await session.execute(select_stmt)
             if result.scalar_one_or_none() is None:
                 user = User(
                     id=from_user.id,
@@ -29,7 +37,7 @@ async def start_handler(msg: Message) -> None:
                     language_code=from_user.language_code,
                 )
                 session.add(user)
-                session.commit()
+                await session.commit()
                 await msg.answer(f"{from_user.first_name} is registred")
             else:
                 update_stmt = (
@@ -42,27 +50,23 @@ async def start_handler(msg: Message) -> None:
                         language_code=from_user.language_code,
                     )
                 )
-                session.execute(update_stmt)
-                session.commit()
+                await session.execute(update_stmt)
+                await session.commit()
                 await msg.answer(f"{from_user.first_name} is updated")
 
 
 async def add_admin_handler(msg: Message) -> None:
     from_user = msg.from_user
-    if (
-        (from_user is not None)
-        and (msg.text is not None)
-        and (from_user.id == int(ROOT_ID))
-    ):
-        with Session() as session:
+    if (from_user is not None) and (msg.text is not None) and (from_user.id == ROOT_ID):
+        async with AsyncSession() as session:
             username = msg.text.split(" ")[1].strip()
             if username[0] == "@":
                 select_stmt = select(User).where(User.username == username[1:])
-                existing_user = session.scalars(select_stmt).first()
+                existing_user = (await session.execute(select_stmt)).scalars().first()
                 if existing_user is not None:
                     if not existing_user.is_admin:
                         existing_user.is_admin = True
-                        session.commit()
+                        await session.commit()
                         await msg.answer(f"The {username} is added to the admins list")
                     else:
                         await msg.answer(
@@ -78,20 +82,16 @@ async def add_admin_handler(msg: Message) -> None:
 
 async def remove_admin_handler(msg: Message) -> None:
     from_user = msg.from_user
-    if (
-        (from_user is not None)
-        and (msg.text is not None)
-        and (from_user.id == int(ROOT_ID))
-    ):
-        with Session() as session:
+    if (from_user is not None) and (msg.text is not None) and (from_user.id == ROOT_ID):
+        async with AsyncSession() as session:
             username = msg.text.split(" ")[1].strip()
             if username[0] == "@":
                 select_stmt = select(User).where(User.username == username[1:])
-                existing_user = session.scalars(select_stmt).first()
+                existing_user = (await session.execute(select_stmt)).scalars().first()
                 if existing_user is not None:
                     if existing_user.is_admin:
                         existing_user.is_admin = False
-                        session.commit()
+                        await session.commit()
                         await msg.answer(
                             f"The {username} is removed to the admins list"
                         )
@@ -120,16 +120,19 @@ async def send_post_handler(cb: CallbackQuery, state: FSMContext) -> None:
         from_user = cb.message.chat
         data = await state.get_data()
         post = data.get("post")
-        with Session() as session:
+
+        async with AsyncSession() as session:
             select_stmt = select(User)
-            users = session.scalars(select_stmt).all()
-            select_stmt = select(User).where(User.is_admin)
-            admins = session.scalars(select_stmt).all()
+            users = (await session.execute(select_stmt)).scalars().all()
+            select_stmt = select(User).where(User.is_admin.is_(True))
+            admins = (await session.execute(select_stmt)).scalars().all()
             admin_ids = {admin.id for admin in admins}
 
-        if (from_user.id == int(ROOT_ID)) or (from_user.id in admin_ids):
+        if (from_user.id == ROOT_ID) or (from_user.id in admin_ids):
             for user in users:
-                await bot.send_message(user.id, post, parse_mode=ParseMode.MARKDOWN_V2)
+                await bot.send_message(
+                    user.id, str(post), parse_mode=ParseMode.MARKDOWN_V2
+                )
             await cb.message.edit_reply_markup(reply_markup=None)
             await cb.message.reply("Post is sent")
         else:
