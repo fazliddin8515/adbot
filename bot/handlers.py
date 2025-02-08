@@ -30,8 +30,9 @@ async def start_handler(msg: Message) -> None:
         async with AsyncSession() as session:
             select_stmt = select(User).where(User.id == from_user.id)
             result = await session.execute(select_stmt)
-            if result.scalar_one_or_none() is None:
-                user = User(
+            user = result.scalar_one_or_none()
+            if user is None:
+                new_user = User(
                     id=from_user.id,
                     is_bot=from_user.is_bot,
                     first_name=from_user.first_name,
@@ -39,20 +40,20 @@ async def start_handler(msg: Message) -> None:
                     username=from_user.username,
                     language_code=from_user.language_code,
                 )
-                session.add(user)
+                session.add(new_user)
                 await session.commit()
                 await msg.answer(f"{from_user.first_name} is registred")
             else:
-                update_stmt = (
-                    update(User)
-                    .where(User.id == from_user.id)
-                    .values(
-                        first_name=from_user.first_name,
-                        last_name=from_user.last_name,
-                        username=from_user.username,
-                        language_code=from_user.language_code,
-                    )
-                )
+                update_stmt = update(User).where(User.id == from_user.id)
+                if from_user.first_name != user.first_name:
+                    update_stmt.values(first_name=from_user.first_name)
+                if from_user.last_name != user.last_name:
+                    update_stmt.values(last_name=from_user.last_name)
+                if from_user.username != user.username:
+                    update_stmt.values(username=from_user.username)
+                if from_user.language_code != user.language_code:
+                    update_stmt.values(language_code=from_user.language_code)
+
                 await session.execute(update_stmt)
                 await session.commit()
                 await msg.answer(f"{from_user.first_name} is updated")
@@ -65,10 +66,11 @@ async def add_admin_handler(msg: Message) -> None:
             username = msg.text.split(" ")[1].strip()
             if username[0] == "@":
                 select_stmt = select(User).where(User.username == username[1:])
-                existing_user = (await session.execute(select_stmt)).scalars().first()
-                if existing_user is not None:
-                    if not existing_user.is_admin:
-                        existing_user.is_admin = True
+                result = await session.execute(select_stmt)
+                user = result.scalars().first()
+                if user is not None:
+                    if not user.is_admin:
+                        user.is_admin = True
                         await session.commit()
                         await msg.answer(f"The {username} is added to the admins list")
                     else:
@@ -90,10 +92,11 @@ async def remove_admin_handler(msg: Message) -> None:
             username = msg.text.split(" ")[1].strip()
             if username[0] == "@":
                 select_stmt = select(User).where(User.username == username[1:])
-                existing_user = (await session.execute(select_stmt)).scalars().first()
-                if existing_user is not None:
-                    if existing_user.is_admin:
-                        existing_user.is_admin = False
+                result = await session.execute(select_stmt)
+                user = result.scalars().first()
+                if user is not None:
+                    if user.is_admin:
+                        user.is_admin = False
                         await session.commit()
                         await msg.answer(
                             f"The {username} is removed to the admins list"
