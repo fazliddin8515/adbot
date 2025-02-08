@@ -1,4 +1,5 @@
 import asyncio
+import logging
 import os
 from logging.config import fileConfig
 
@@ -8,33 +9,17 @@ from sqlalchemy.engine import Connection
 from sqlalchemy.ext.asyncio import create_async_engine
 
 from database.models import Base
-from utils.db import create_db_url
 
-DB_USER = os.getenv("DB_USER")
-DB_PASS = os.getenv("DB_PASS")
-DB_HOST = os.getenv("DB_HOST")
-DB_PORT = os.getenv("DB_PORT")
-DB_NAME = os.getenv("DB_NAME")
+DB_URI = os.getenv("DB_URI", "")
 
-assert DB_USER is not None, "DB_USER environment variable is required"
-assert DB_PASS is not None, "DB_PASS environment variable is required"
-assert DB_HOST is not None, "DB_HOST environment variable is required"
-assert DB_PORT is not None, "DB_PORT environment variable is required"
-assert DB_NAME is not None, "DB_NAME environment variable is required"
-
-DB_URL = create_db_url(
-    drivername="mysql+aiomysql",
-    username=DB_USER,
-    password=DB_PASS,
-    host=DB_HOST,
-    port=int(DB_PORT),
-    database=DB_NAME,
-)
+if not DB_URI:
+    logging.critical("Missing DB_URI environment variable.")
+    raise SystemExit(1)
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
 config = context.config
-config.set_main_option("sqlalchemy.url", str(DB_URL))
+config.set_main_option("sqlalchemy.url", DB_URI)
 
 # Interpret the config file for Python logging.
 # This line sets up loggers basically.
@@ -90,7 +75,7 @@ async def run_async_migrations() -> None:
 
     """
 
-    connectable = create_async_engine(DB_URL, poolclass=pool.NullPool)
+    connectable = create_async_engine(DB_URI, poolclass=pool.NullPool)
 
     async with connectable.connect() as connection:
         await connection.run_sync(do_run_migrations)
