@@ -3,14 +3,17 @@ import os
 
 from aiogram.enums import ParseMode
 from aiogram.fsm.context import FSMContext
-from aiogram.types import CallbackQuery, Message
+from aiogram.types import (
+    CallbackQuery,
+    InlineKeyboardButton,
+    InlineKeyboardMarkup,
+    Message,
+)
 from sqlalchemy import select, update
 
 from bot.bot import bot
 from database.db import AsyncSession
 from database.models import User
-
-from .keyboards import yes_no_keyboard
 
 root_id_str = os.getenv("ROOT_ID")
 
@@ -100,6 +103,14 @@ async def remove_admin_handler(msg: Message) -> None:
 
 
 async def post_handler(msg: Message, state: FSMContext) -> None:
+    yes_no_keyboard = InlineKeyboardMarkup(
+        inline_keyboard=[
+            [
+                InlineKeyboardButton(text="Yes", callback_data="send_post"),
+                InlineKeyboardButton(text="No", callback_data="cancel_post"),
+            ],
+        ]
+    )
     from_user = msg.from_user
     if (from_user is not None) and (msg.md_text is not None):
         post = msg.md_text[5:].strip()
