@@ -1,11 +1,12 @@
 import asyncio
 import logging
 import os
+from pathlib import Path
 
 from bot.bot import bot
 from bot.dispatcher import dp
 
-os.makedirs("logs", exist_ok=True)
+Path("logs").mkdir(exist_ok=True)
 
 log_level = os.getenv("LOG_LEVEL", "INFO").upper()
 
@@ -13,7 +14,10 @@ logging.basicConfig(
     level=getattr(logging, log_level, logging.INFO),
     format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
     datefmt="%Y-%m-%d %H:%M:%S",
-    handlers=[logging.StreamHandler(), logging.FileHandler("logs/aiogram.log")],
+    handlers=[
+        logging.StreamHandler(),
+        logging.FileHandler(Path("logs") / "aiogram.log"),
+    ],
 )
 
 
@@ -29,6 +33,7 @@ async def main() -> None:
     except Exception as e:
         logging.error("Bot encountered an error: %s", e, exc_info=True)
     finally:
+        await dp.stop_polling()
         await bot.session.close()
         logging.info("Bot session closed.")
 
