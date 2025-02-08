@@ -3,7 +3,7 @@ import logging
 import os
 from pathlib import Path
 
-from bot.bot import bot
+from bot.bot import bot, commands, set_bot_commands
 from bot.dispatcher import dp
 
 Path("logs").mkdir(exist_ok=True)
@@ -21,8 +21,13 @@ logging.basicConfig(
 )
 
 
+async def on_start() -> None:
+    await set_bot_commands(commands)
+
+
 async def main() -> None:
     try:
+        dp.startup.register(on_start)
         await dp.start_polling(bot)
     except asyncio.CancelledError:
         logging.info("Polling was cancelled. Shutting down gracefully...")
