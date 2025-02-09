@@ -1,6 +1,6 @@
 FROM python:3.13-slim
 
-RUN apt update && apt install -y curl && rm -rf /var/lib/apt/lists/*
+RUN apt update && apt install -y curl
 
 RUN curl -sSL https://install.python-poetry.org | python3 -
 
