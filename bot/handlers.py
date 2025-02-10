@@ -1,16 +1,19 @@
 import logging
 import os
-from typing import Optional, TypedDict
+from typing import TypedDict
 
 from aiogram.enums import ParseMode
+from aiogram.exceptions import TelegramAPIError
 from aiogram.fsm.context import FSMContext
 from aiogram.types import (
     CallbackQuery,
     InlineKeyboardButton,
     InlineKeyboardMarkup,
     Message,
+    Update,
 )
 from sqlalchemy import select, update
+from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 
 from bot.bot import bot
 from database.db import AsyncSession
@@ -184,3 +187,19 @@ async def cancel_post_handler(cb: CallbackQuery) -> None:
     if isinstance(cb.message, Message):
         await cb.message.edit_reply_markup(reply_markup=None)
         await cb.message.reply("Post is canceled")
+
+
+async def error_handler(exception: Exception) -> bool:
+    if isinstance(exception, IntegrityError):
+        logging.error("Database IntegrityError: %s", exception, exc_info=True)
+
+    elif isinstance(exception, SQLAlchemyError):
+        logging.error("SQLAlchemyError: %s", exception, exc_info=True)
+
+    elif isinstance(exception, TelegramAPIError):
+        logging.info("Telegram API Error: %s", exception, exc_info=True)
+
+    else:
+        logging.error("Unhandled Exception: %s", exception, exc_info=True)
+
+    return True

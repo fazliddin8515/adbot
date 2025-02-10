@@ -5,6 +5,7 @@ from aiogram.fsm.storage.memory import MemoryStorage
 from .handlers import (
     add_admin_handler,
     cancel_post_handler,
+    error_handler,
     post_handler,
     remove_admin_handler,
     send_post_handler,
@@ -20,3 +21,5 @@ dp.message.register(post_handler, Command("post"))
 
 dp.callback_query.register(send_post_handler, lambda c: c.data == "send_post")
 dp.callback_query.register(cancel_post_handler, lambda c: c.data == "cancel_post")
+
+dp.error.register(error_handler)
