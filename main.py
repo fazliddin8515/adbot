@@ -25,22 +25,22 @@ async def on_start() -> None:
     await set_bot_commands(commands)
 
 
+async def on_shutdown() -> None:
+    logging.info("Bot is shutting down...")
+    await bot.session.close()
+
+
 async def main() -> None:
     try:
         dp.startup.register(on_start)
+        dp.shutdown.register(on_shutdown)
         await dp.start_polling(bot)
     except asyncio.CancelledError:
         logging.info("Polling was cancelled. Shutting down gracefully...")
-    except ConnectionError as e:
-        logging.error("Timeout error: %s", e, exc_info=True)
     except TimeoutError as e:
         logging.error("Timeout error: %s", e, exc_info=True)
     except Exception as e:
         logging.error("Bot encountered an error: %s", e, exc_info=True)
-    finally:
-        await dp.stop_polling()
-        await bot.session.close()
-        logging.info("Bot session closed.")
 
 
 if __name__ == "__main__":
