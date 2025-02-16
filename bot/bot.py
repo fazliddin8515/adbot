@@ -7,7 +7,7 @@ from aiogram.types.bot_command import BotCommand
 BOT_TOKEN = os.getenv("BOT_TOKEN")
 
 if not BOT_TOKEN:
-    logging.critical("Missing BOT_TOKEN environment variable.")
+    logging.error("Missing BOT_TOKEN environment variable.")
     raise SystemExit(1)
 
 bot = Bot(BOT_TOKEN)

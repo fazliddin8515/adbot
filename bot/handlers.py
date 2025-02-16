@@ -10,7 +10,6 @@ from aiogram.types import (
     InlineKeyboardButton,
     InlineKeyboardMarkup,
     Message,
-    Update,
 )
 from sqlalchemy import select, update
 from sqlalchemy.exc import IntegrityError, SQLAlchemyError
@@ -22,7 +21,7 @@ from database.models import User
 root_id_str = os.getenv("ROOT_ID")
 
 if root_id_str is None:
-    logging.critical("Missing ROOT_ID environment variable.")
+    logging.error("Missing ROOT_ID environment variable.")
     raise SystemExit(1)
 
 ROOT_ID = int(root_id_str)

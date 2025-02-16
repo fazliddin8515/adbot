@@ -13,7 +13,7 @@ from database.models import Base
 DB_URI = os.getenv("DB_URI", "")
 
 if not DB_URI:
-    logging.critical("Missing DB_URI environment variable.")
+    logging.error("Missing DB_URI environment variable.")
     raise SystemExit(1)
 
 # this is the Alembic Config object, which provides
