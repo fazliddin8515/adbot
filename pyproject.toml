@@ -23,6 +23,7 @@ pre-commit = "^4.1.0"
 ruff = "^0.9.4"
 mypy = "^1.14.1"
 py-mon = "^2.0.5"
+pytest = "^8.3.4"
 
 [tool.ruff.lint]
 select = ["E", "F", "UP", "B", "SIM", "I"]
